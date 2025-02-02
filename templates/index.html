@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misinformation Detector</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Misinformation Detector</h1>
+            <p class="subtitle">Detect fake text and deepfake images with AI</p>
+        </div>
+
+        <div class="selector">
+            <select id="checkType" class="dropdown">
+                <option value="text">Check Text</option>
+                <option value="image">Check Image</option>
+            </select>
+        </div>
+
+        <div id="textInput" class="input-section">
+            <textarea id="text" placeholder="Enter text to check"></textarea>
+            <button class="check-btn" onclick="checkText()">
+                <i class="fas fa-check"></i> Check Text
+            </button>
+        </div>
+
+        <div id="imageInput" class="input-section" style="display: none;">
+            <label for="image" class="upload-btn">
+                <i class="fas fa-upload"></i> Upload Image
+                <input type="file" id="image" accept="image/*">
+            </label>
+            <button class="check-btn" onclick="checkImage()">
+                <i class="fas fa-check"></i> Check Image
+            </button>
+        </div>
+
+        <div class="result-section">
+            <h2>Result: <span id="result">-</span></h2>
+        </div>
+    </div>
+
+    <script>
+        const checkType = document.getElementById('checkType');
+        const textInput = document.getElementById('textInput');
+        const imageInput = document.getElementById('imageInput');
+
+        checkType.addEventListener('change', (e) => {
+            if (e.target.value === 'text') {
+                textInput.style.display = 'block';
+                textInput.classList.add('fade-in');
+                imageInput.style.display = 'none';
+            } else {
+                textInput.style.display = 'none';
+                imageInput.style.display = 'block';
+                imageInput.classList.add('fade-in');
+            }
+        });
+
+        async function checkText() {
+            const text = document.getElementById('text').value;
+            document.getElementById('result').innerText = "Checking...";
+            const response = await fetch('/check_text', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            const data = await response.json();
+            document.getElementById('result').innerText = data.result;
+            document.getElementById('result').classList.add('highlight');
+            setTimeout(() => document.getElementById('result').classList.remove('highlight'), 1000);
+        }
+
+        async function checkImage() {
+            const file = document.getElementById('image').files[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('image', file);
+            document.getElementById('result').innerText = "Checking...";
+            const response = await fetch('/check_image', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            document.getElementById('result').innerText = data.result;
+            document.getElementById('result').classList.add('highlight');
+            setTimeout(() => document.getElementById('result').classList.remove('highlight'), 1000);
+        }
+    </script>
+</body>
+</html>
